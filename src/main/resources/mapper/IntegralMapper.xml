@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gvt.sas.backend.dao.IntegralMapper">
+
+	<sql id="columns">
+		SAS_INTEGRAL_Pk,
+		SAS_INTEGRAL_Phone,
+		SAS_INTEGRAL_WeChatId,
+		SAS_INTEGRAL_AliId,
+		SAS_INTEGRAL_Integral,
+		SAS_INTEGRAL_packageNum
+	</sql>
+
+	<resultMap id="PimResultMap" type="com.gvt.sas.backend.entity.Integral">
+		<result property="integralpk" column="SAS_INTEGRAL_Pk" />
+		<result property="phone" column="SAS_INTEGRAL_Phone" />
+		<result property="weChatID" column="SAS_INTEGRAL_WeChatId" />
+		<result property="ailID" column="SAS_INTEGRAL_AliId" />
+		<result property="integral" column="SAS_INTEGRAL_Integral" />
+		<result property="packageNum" column="SAS_INTEGRAL_packageNum" />
+	</resultMap>
+
+	<select id="checkPhone" parameterType="java.lang.String"
+		resultMap="PimResultMap">
+		SELECT
+		<include refid="columns" />
+		FROM
+		T_SAS_INTEGRAL WHERE SAS_INTEGRAL_Phone=#{phone}
+	</select>
+
+	<select id="checkExist" parameterType="java.lang.String"
+		resultMap="PimResultMap">
+		SELECT
+		<include refid="columns" />
+		from T_SAS_INTEGRAL WHERE
+		T_SAS_INTEGRAL.SAS_INTEGRAL_WeChatId=#{clientId} or
+		T_SAS_INTEGRAL.SAS_INTEGRAL_AliId=#{clientId}
+	</select>
+
+	<insert id="bindingPhone" parameterType="com.gvt.sas.backend.entity.Integral">
+		INSERT INTO
+		T_SAS_INTEGRAL (
+		SAS_INTEGRAL_Pk,
+		SAS_INTEGRAL_Phone,
+		SAS_INTEGRAL_WeChatId,
+		SAS_INTEGRAL_AliId,
+		SAS_INTEGRAL_packageNum,
+		SAS_INTEGRAL_Integral
+		)
+		VALUES
+		(#{integralpk}, #{phone},
+		#{weChatID}, #{ailID},0,0)
+	</insert>
+
+	<update id="modifyBindingPhone" parameterType="com.gvt.sas.backend.entity.Integral">
+		UPDATE T_SAS_INTEGRAL SET
+		<trim suffixOverrides=",">
+			<if test="null!=phone and ''!=phone">SAS_INTEGRAL_Phone = #{phone},</if>
+			<if test="null!=weChatID and ''!=weChatID">SAS_INTEGRAL_WeChatId = #{weChatID},</if>
+			<if test="null!=ailID and ''!=ailID">SAS_INTEGRAL_AliId = #{ailID},</if>
+			<if test="null!=integral and integral &gt; 0 ">SAS_INTEGRAL_Integral = SAS_INTEGRAL_Integral +
+				#{integral},
+			</if>
+			<if test="null!=packageNum and packageNum &gt; 0 ">SAS_INTEGRAL_packageNum = SAS_INTEGRAL_packageNum +
+				#{packageNum},
+			</if>
+		</trim>
+		WHERE SAS_INTEGRAL_Pk=#{integralpk}
+	</update>
+
+	<delete id="deleteMember" parameterType="java.lang.String">
+		DELETE from
+		T_SAS_INTEGRAL WHERE T_SAS_INTEGRAL.SAS_INTEGRAL_Pk=#{integralpk}
+	</delete>
+	
+	<update id="minusIntegral">
+		UPDATE T_SAS_INTEGRAL
+		SET `SAS_INTEGRAL_Integral`=#{value}
+		WHERE
+		`SAS_INTEGRAL_Pk` =#{integralpk}
+	</update>
+	
+	<insert id="modifyIntegral" parameterType="com.gvt.sas.backend.entity.Integral">
+		<!-- 查看是否存在memberid,如果存在及更新，否则插入 -->
+	    <selectKey keyProperty="count" resultType="int" order="BEFORE">
+	        select count(1) as count from T_SAS_INTEGRAL where SAS_INTEGRAL_Phone = #{phone}
+	    </selectKey>
+	    
+	    <if test="count > 0">
+	    	UPDATE T_SAS_INTEGRAL
+			SET SAS_INTEGRAL_Integral = SAS_INTEGRAL_Integral + CASE
+			WHEN SAS_INTEGRAL_packageNum + 1 &gt; 300 THEN
+				50
+			WHEN SAS_INTEGRAL_packageNum + 1 &gt; 100 THEN
+				30
+			WHEN SAS_INTEGRAL_packageNum + 1 &gt; 30 THEN
+				20
+			ELSE
+				10
+			END,
+			 SAS_INTEGRAL_packageNum = SAS_INTEGRAL_packageNum + 1
+			WHERE 
+			 SAS_INTEGRAL_Phone = #{phone}
+	    </if>
+		<if test="count == 0">
+			INSERT INTO
+			T_SAS_INTEGRAL (
+			SAS_INTEGRAL_Pk,
+			SAS_INTEGRAL_Phone,
+			SAS_INTEGRAL_WeChatId,
+			SAS_INTEGRAL_AliId,
+			SAS_INTEGRAL_packageNum,
+			SAS_INTEGRAL_Integral
+			)
+			VALUES
+			(#{integralpk}, #{phone},
+			#{weChatID}, #{ailID},1,1)
+		</if>
+	</insert>
+</mapper>

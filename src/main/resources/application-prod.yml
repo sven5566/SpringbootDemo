@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    url: jdbc:mysql://47.91.40.209:3306/gvtsasTest?useUnicode=true&characterEncoding=utf8&autoReconnect=true&failOverReadOnly=false&allowMultiQueries=true
+    username: gvtlms
+    password: gvtlms
+
+
+

@@ -1,0 +1,10 @@
+spring:
+  profiles:
+    active: prod
+mybatis:
+  typeAliasesPackage: com.gvt.sas.backend.entity
+#  config-location: classpath:/config/mybatis-config.xml
+  mapperLocations: classpath:/mapper/*Mapper.xml
+
+
+
